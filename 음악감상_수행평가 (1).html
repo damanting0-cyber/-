@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>음악 감상 수행평가</title>
+<style>
+  :root {
+    --bg:#f6f5f2; --card:#fff; --ink:#222; --sub:#777; --accent:#3b5bdb; --line:#e3e1dc;
+    --ease: cubic-bezier(.2,.8,.2,1);
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif; -webkit-font-smoothing:antialiased; background:var(--bg); color:var(--ink); padding:20px 16px 120px; }
+  button, input { font-family:inherit; }
+  button, .tHead { -webkit-tap-highlight-color:transparent; }
+  button:focus { outline:none; }
+  h1 { font-size:20px; margin:0 0 4px; letter-spacing:-.02em; }
+  .sub { color:var(--sub); font-size:14px; margin-bottom:18px; }
+  .section { margin-bottom:18px; }
+  .section h2 { font-size:14px; color:var(--sub); margin:16px 0 8px; font-weight:600; }
+
+  /* 곡 카드 (누르면 카드 안에서 플레이어가 펼쳐짐) */
+  .track { background:var(--card); border:1px solid var(--line); border-radius:14px; margin-bottom:8px; overflow:hidden; scroll-margin-top:12px; scroll-margin-bottom:110px;
+    transition: border-color .3s var(--ease), background-color .3s var(--ease), box-shadow .35s var(--ease); }
+  .track.open { border-color:var(--accent); box-shadow:0 8px 24px rgba(59,91,219,.12); }
+  .tHead { display:flex; gap:12px; align-items:center; padding:13px 14px; cursor:pointer; transition: background-color .2s ease; }
+  .tHead:active { background:#f4f5fa; }
+  .num { width:26px; height:26px; border-radius:50%; background:#eef2ff; color:var(--accent); font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition: background-color .3s var(--ease), color .3s var(--ease); }
+  .track.open .num { background:var(--accent); color:#fff; }
+  .meta { font-size:15px; flex:1; min-width:0; }
+
+  /* 재생 중 표시 */
+  .eq { display:flex; align-items:flex-end; gap:2px; height:14px; width:14px; opacity:0; transition: opacity .3s ease; flex-shrink:0; }
+  .eq i { flex:1; background:var(--accent); border-radius:1px; height:30%; }
+  .track.isPlaying .eq { opacity:1; }
+  .track.isPlaying .eq i { animation: eq .9s ease-in-out infinite; }
+  .track.isPlaying .eq i:nth-child(2) { animation-delay:.2s; }
+  .track.isPlaying .eq i:nth-child(3) { animation-delay:.4s; }
+  @keyframes eq { 0%,100% { height:25%; } 50% { height:100%; } }
+
+  /* 카드 안 플레이어 */
+  .tBody { display:grid; grid-template-rows:0fr; transition: grid-template-rows .4s var(--ease); }
+  .track.open .tBody { grid-template-rows:1fr; }
+  .tInner { min-height:0; overflow:hidden; }
+  .pad { padding:2px 14px 14px; opacity:0; transform:translateY(-6px); transition: opacity .3s ease, transform .4s var(--ease); }
+  .track.open .pad { opacity:1; transform:none; transition-delay:.06s; }
+  .num { position:relative; }
+  .num svg { display:none; width:13px; height:13px; }
+  .track.open .num { cursor:pointer; transition: transform .2s var(--ease), background-color .3s var(--ease), color .3s var(--ease); }
+  .track.open .num:active { transform:scale(.88); }
+  .track.open .num .n { display:none; }
+  .track.open .num .iconPlay { display:block; margin-left:1px; }
+  .track.open.isPlaying .num .iconPlay { display:none; }
+  .track.open.isPlaying .num .iconPause { display:block; margin-left:0; }
+
+  /* 플레이 바: 원 없이 둥근 사각형만 */
+  .pBar { padding-top:6px; }
+  .bar { position:relative; height:8px; border-radius:4px; background:#e6e7ee; overflow:hidden; cursor:pointer; touch-action:none; }
+  .fill { position:absolute; left:0; top:0; bottom:0; width:0%; background:var(--accent); border-radius:4px; transition: width .25s linear; }
+  .bar.drag .fill { transition:none; }
+  .pTimes { display:flex; justify-content:space-between; font-size:11px; color:var(--sub); margin-top:8px; font-variant-numeric: tabular-nums; }
+
+  .missWrap { display:grid; grid-template-rows:0fr; transition: grid-template-rows .3s var(--ease), margin-top .3s var(--ease); }
+  .missWrap.show { grid-template-rows:1fr; margin-top:10px; }
+  .missing { min-height:0; overflow:hidden; font-size:12px; color:#c0392b; }
+
+  /* 시험 */
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; }
+  .btn { margin-top:12px; background:var(--accent); color:#fff; border:0; border-radius:10px; padding:11px 16px; font-size:15px; cursor:pointer; width:100%; transition: transform .2s var(--ease), background-color .25s ease, opacity .25s ease; }
+  .btn:active:not(:disabled) { transform:scale(.98); }
+  .btn:disabled { background:#bbb; }
+  .btn.play { margin:0 0 14px; background:#444; }
+  .row { border:1px solid var(--line); border-radius:10px; margin-bottom:8px; overflow:hidden; background:#fff; transition: border-color .3s ease, background-color .3s ease; }
+  .row.ok { border-color:#2f9e44; background:#e6f7ec; }
+  .row.ng { border-color:#c0392b; background:#fdecea; }
+  .rowHead { width:100%; display:flex; justify-content:space-between; align-items:center; gap:10px; background:none; border:0; padding:14px 12px; font-size:15px; color:var(--ink); cursor:pointer; text-align:left; transition: background-color .2s ease; }
+  .rowHead:active:not(:disabled) { background:#f4f5fa; }
+  .rowHead:disabled { cursor:default; }
+  .rl { color:var(--sub); font-size:14px; flex-shrink:0; }
+  .rv { font-weight:600; text-align:right; transition: color .25s ease; }
+  .rv.empty { color:#aaa; font-weight:400; }
+  .ans { padding:0 12px 12px; font-size:14px; color:#c0392b; }
+
+  .rowWrap { display:grid; grid-template-rows:0fr; transition: grid-template-rows .4s var(--ease); }
+  .row.open .rowWrap { grid-template-rows:1fr; }
+  .rowInner { min-height:0; overflow:hidden; }
+  .rowOpts { display:grid; gap:8px; padding:0 12px 12px; max-height:320px; overflow-y:auto; opacity:0; transform:translateY(-6px); transition: opacity .3s ease, transform .4s var(--ease); }
+  .row.open .rowOpts { opacity:1; transform:none; transition-delay:.05s; }
+  .opt { border:1px solid var(--line); background:#fff; border-radius:10px; padding:11px 12px; text-align:left; font-size:15px; cursor:pointer; color:var(--ink); transition: border-color .2s ease, background-color .2s ease, transform .2s var(--ease); }
+  .opt:hover { border-color:var(--accent); }
+  .opt:active { transform:scale(.985); background:#f4f5fa; }
+
+  /* 새 곡이 나올 때 줄이 차례로 올라옴 */
+  .card.anim .btn.play, .card.anim .row, .card.anim #mainBtn { animation: fadeUp .45s var(--ease) both; }
+  .card.anim .row:nth-of-type(1) { animation-delay:.04s; }
+  .card.anim .row:nth-of-type(2) { animation-delay:.09s; }
+  .card.anim .row:nth-of-type(3) { animation-delay:.14s; }
+  .card.anim #mainBtn { animation-delay:.19s; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+
+  .score { text-align:center; padding:20px 0; }
+  .score .big { font-size:40px; font-weight:700; color:var(--accent); }
+  .wrongList { text-align:left; font-size:14px; margin-top:14px; }
+  .wrongList li { margin-bottom:6px; }
+
+  /* 화면 전환: 하단에서 블러가 풀리며 올라옴 */
+  .stage { position:relative; }
+  .screen { display:none; }
+  .screen.active { display:block; animation: rise .28s var(--ease); }
+  @keyframes rise {
+    from { opacity:0; transform:translateY(32px); filter:blur(10px); }
+    to   { opacity:1; transform:none; filter:blur(0); }
+  }
+
+  /* 하단 블러 배경 */
+  .navBg { position:fixed; left:0; right:0; bottom:0; height:92px; pointer-events:none; z-index:9;
+    background:linear-gradient(to top, rgba(246,245,242,.92) 30%, rgba(246,245,242,0));
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    -webkit-mask-image: linear-gradient(to top, #000 40%, transparent); mask-image: linear-gradient(to top, #000 40%, transparent); }
+
+  /* 하단 네비게이션 */
+  .nav { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); width:124px; background:#222; border-radius:999px; padding:4px; display:flex; box-shadow:0 6px 20px rgba(0,0,0,.2); z-index:10; }
+  .nav .pill { position:absolute; top:4px; bottom:4px; left:4px; width:0; background:#fff; border-radius:999px; transition: left .35s var(--ease), width .35s var(--ease); }
+  .nav button { position:relative; z-index:1; flex:1; background:transparent; border:0; color:#bbb; padding:9px 0; border-radius:999px; cursor:pointer; display:flex; justify-content:center; align-items:center; transition: color .3s ease, transform .2s var(--ease); outline:none; }
+  .nav button:active { transform:scale(.9); }
+  .nav button.on { color:#222; }
+  .nav svg { width:19px; height:19px; }
+
+  /* 볼드 강화 */
+  h1 { font-weight:800; }
+  .sub { font-weight:600; }
+  .section h2 { font-weight:800; font-size:15px; }
+  .meta { font-weight:700; }
+  .meta, .rl, .rv, .ans, .pTimes, .num, .rowHead, .opt { font-weight:700; }
+  .rl { font-weight:600; }
+  .pTitle, .btn, .btn.play, .nav button.on { font-weight:800; }
+  .nav button { font-weight:700; }
+  .score .big { font-weight:900; }
+  .wrongList b { font-weight:800; }
+  .missing { font-weight:700; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<h1>음악 감상 수행평가</h1>
+<div class="sub">2026학년도 2학기 · 3학년 6반 6번 · 곡당 처음 30초만 재생</div>
+
+<div class="stage">
+  <!-- 듣기 -->
+  <section id="listen" class="screen active">
+    <div id="list"></div>
+  </section>
+
+  <!-- 시험 -->
+  <section id="quiz" class="screen">
+    <div class="card" id="quizCard"></div>
+  </section>
+</div>
+
+<audio id="audio" preload="metadata"></audio>
+
+<div class="navBg"></div>
+<nav class="nav">
+  <span class="pill" id="pill"></span>
+  <button id="tabListen" class="on" aria-label="듣기">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 14v-2a9 9 0 0 1 18 0v2"/>
+      <rect x="3" y="14" width="4" height="7" rx="1.5"/>
+      <rect x="17" y="14" width="4" height="7" rx="1.5"/>
+    </svg>
+  </button>
+  <button id="tabQuiz" aria-label="시험">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+      <path d="M14 3v6h6"/>
+      <path d="M8 13h8M8 17h8M8 9h3"/>
+    </svg>
+  </button>
+</nav>
+
+<script>
+const AUDIO = {1:"audio/1.mp3",2:"audio/2.mp3",3:"audio/3.mp3",4:"audio/4.mp3",5:"audio/5.mp3",6:"audio/6.mp3",7:"audio/7.mp3",8:"audio/8.mp3",9:"audio/9.mp3",10:"audio/10.mp3",11:"audio/11.mp3",12:"audio/12.mp3",13:"audio/13.mp3"};
+const AUDIO_URL = {};
+function srcFor(n) {
+  if (!AUDIO[n].startsWith("data:")) return AUDIO[n];
+  if (!AUDIO_URL[n]) {
+    try {
+      const bin = atob(AUDIO[n].split(",")[1]);
+      const u8 = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      AUDIO_URL[n] = URL.createObjectURL(new Blob([u8], { type: "audio/mpeg" }));
+    } catch (e) { AUDIO_URL[n] = AUDIO[n]; }
+  }
+  return AUDIO_URL[n];
+}
+const TRACKS = [
+  { n:1,  composer:"베를리오즈", title:"환상 교향곡 중 제2악장 '무도회'", era:"낭만" },
+  { n:2,  composer:"쇼팽",       title:"환상 즉흥곡",                     era:"낭만" },
+  { n:3,  composer:"브람스",     title:"헝가리 무곡 5번",                 era:"낭만" },
+  { n:4,  composer:"스메타나",   title:"나의 조국 중 제2곡 '몰다우'",      era:"국민악파" },
+  { n:5,  composer:"그리그",     title:"페르 귄트 모음곡 중 '아침의 기분'", era:"국민악파" },
+  { n:6,  composer:"그리그",     title:"페르 귄트 모음곡 중 '산 왕의 궁전에서'", era:"국민악파" },
+  { n:7,  composer:"그리그",     title:"페르 귄트 모음곡 중 '솔베이그의 노래'", era:"국민악파" },
+  { n:8,  composer:"드뷔시",     title:"목신의 오후 전주곡",              era:"근현대" },
+  { n:9,  composer:"드뷔시",     title:"바다 중 제2악장 '파도의 희롱'",    era:"근현대" },
+  { n:10, composer:"드뷔시",     title:"달빛",                           era:"근현대" },
+  { n:11, composer:"쇤베르크",   title:"피아노 모음곡 제25번 전주곡",      era:"근현대" },
+  { n:12, composer:"쇤베르크",   title:"달에 홀린 피에로 중 제1곡 '달에 취하여'", era:"근현대" },
+  { n:13, composer:"스트라빈스키", title:"봄의 제전",                      era:"근현대" }
+];
+const COMPOSERS = [...new Set(TRACKS.map(t => t.composer))];
+const ERAS = ["낭만", "국민악파", "근현대"];
+
+const pad = n => String(n).padStart(2, "0");
+const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
+const fmt = s => (isFinite(s) && s >= 0) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}` : "0:00";
+const $ = (el, sel) => el.querySelector(sel);
+
+/* ---------- 듣기: 카드 안에서 플레이어가 펼쳐짐 ---------- */
+const list = document.getElementById("list");
+const audio = document.getElementById("audio");
+let cur = null; // 지금 펼쳐진 곡 카드
+
+function renderList() {
+  list.innerHTML = ERAS.map(era => `
+    <div class="section">
+      <h2>${era}</h2>
+      ${TRACKS.filter(t => t.era === era).map(t => `
+        <div class="track" data-n="${t.n}">
+          <div class="tHead">
+            <div class="num"><span class="n">${t.n}</span><svg class="iconPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><svg class="iconPause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg></div>
+            <div class="meta">${t.composer} - ${t.title}</div>
+            <div class="eq"><i></i><i></i><i></i></div>
+          </div>
+          <div class="tBody"><div class="tInner"><div class="pad">
+            <div class="pBar">
+              <div class="bar"><div class="fill"></div></div>
+              <div class="pTimes"><span class="pCur">0:00</span><span class="pDur">0:00</span></div>
+            </div>
+            <div class="missWrap"><div class="missing">음원을 재생할 수 없어요. 다른 브라우저(Chrome, Safari)로 열어 보세요.</div></div>
+          </div></div></div>
+        </div>`).join("")}
+    </div>`).join("");
+}
+
+function setProgress(el, pct) {
+  $(el, ".fill").style.width = Math.max(0, Math.min(100, pct)) + "%";
+}
+
+function resetCard(el) {
+  setProgress(el, 0);
+  $(el, ".pCur").textContent = "0:00";
+  $(el, ".pDur").textContent = "0:00";
+  $(el, ".missWrap").classList.remove("show");
+}
+
+function closeCard(el) {
+  el.classList.remove("open", "isPlaying");
+  setTimeout(() => { if (!el.classList.contains("open")) resetCard(el); }, 450);
+}
+
+function openCard(el) {
+  if (cur && cur !== el) closeCard(cur);
+  cur = el;
+  el.classList.add("open");
+  const n = +el.dataset.n;
+  resetCard(el);
+  audio.src = srcFor(n);
+  audio.play().catch(() => {});
+  // 펼쳐진 뒤에 카드가 화면에 다 보이도록 부드럽게 스크롤
+  setTimeout(() => el.scrollIntoView({ behavior:"smooth", block:"nearest" }), 380);
+}
+
+list.addEventListener("click", e => {
+  const head = e.target.closest(".tHead");
+  if (head) {
+    const el = head.parentElement;
+    // 펼쳐진 카드에서 번호(재생/정지 버튼)를 누르면 재생 토글
+    if (e.target.closest(".num") && el === cur && el.classList.contains("open")) {
+      audio.paused ? audio.play().catch(() => {}) : audio.pause();
+      return;
+    }
+    if (el === cur && el.classList.contains("open")) {
+      audio.pause();
+      closeCard(el);
+      cur = null;
+    } else {
+      openCard(el);
+    }
+    return;
+  }
+});
+
+// 플레이 바 터치/드래그로 이동
+let dragging = null;
+function seekFromEvent(e) {
+  const d = audio.duration;
+  if (!dragging || !d || !cur) return;
+  const r = dragging.getBoundingClientRect();
+  const pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+  audio.currentTime = pct * d;
+  setProgress(cur, pct * 100);
+  $(cur, ".pCur").textContent = fmt(audio.currentTime);
+}
+list.addEventListener("pointerdown", e => {
+  const bar = e.target.closest(".bar");
+  if (!bar || !cur || !cur.contains(bar)) return;
+  dragging = bar;
+  bar.classList.add("drag");
+  bar.setPointerCapture(e.pointerId);
+  seekFromEvent(e);
+});
+list.addEventListener("pointermove", e => { if (dragging) seekFromEvent(e); });
+function endDrag() { if (dragging) { dragging.classList.remove("drag"); dragging = null; } }
+list.addEventListener("pointerup", endDrag);
+list.addEventListener("pointercancel", endDrag);
+
+audio.addEventListener("play", () => cur && cur.classList.add("isPlaying"));
+audio.addEventListener("pause", () => cur && cur.classList.remove("isPlaying"));
+audio.addEventListener("ended", () => cur && cur.classList.remove("isPlaying"));
+audio.addEventListener("loadedmetadata", () => { if (cur) $(cur, ".pDur").textContent = fmt(audio.duration); });
+audio.addEventListener("timeupdate", () => {
+  if (!cur) return;
+  const d = audio.duration || 0;
+  const pct = d ? (audio.currentTime / d) * 100 : 0;
+  if (!dragging) setProgress(cur, pct);
+  $(cur, ".pCur").textContent = fmt(audio.currentTime);
+});
+audio.addEventListener("error", () => {
+  if (!cur || !audio.getAttribute("src")) return;
+  const n = +cur.dataset.n;
+  if (audio.src.startsWith("blob:")) { audio.src = AUDIO[n]; audio.play().catch(() => {}); return; }
+  $(cur, ".missWrap").classList.add("show");
+});
+
+/* ---------- 시험 ---------- */
+const quizCard = document.getElementById("quizCard");
+const quizAudio = new Audio();
+const FIELDS = [["composer", "작곡가"], ["title", "곡명"], ["era", "시대"]];
+
+let order, idx, score, wrongs;
+let curTrack, opts, correct, answers, submitted;
+
+function startQuiz() {
+  order = shuffle(TRACKS);
+  idx = 0; score = 0; wrongs = [];
+  nextTrack();
+}
+
+function makeOptions() {
+  return {
+    composer: shuffle(COMPOSERS),
+    title:    shuffle(TRACKS.map(x => x.title)),
+    era:      shuffle(ERAS)
+  };
+}
+
+function nextTrack() {
+  if (idx >= order.length) return showScore();
+  curTrack = order[idx++];
+  opts = makeOptions();
+  correct = { composer: curTrack.composer, title: curTrack.title, era: curTrack.era };
+  answers = { composer: null, title: null, era: null };
+  submitted = false;
+  buildCard(true);
+  playClip();
+}
+
+function allAnswered() {
+  return FIELDS.every(([k]) => answers[k] !== null);
+}
+
+function buildCard(animate = false) {
+  quizCard.classList.toggle("anim", animate);
+  quizCard.innerHTML = `
+    <button class="btn play" id="playBtn">▶ 듣기</button>
+    ${FIELDS.map(([k, label]) => {
+      const val = answers[k];
+      const res = submitted ? (val === correct[k] ? " ok" : " ng") : "";
+      return `
+        <div class="row${res}" data-k="${k}">
+          <button class="rowHead" data-k="${k}" ${submitted ? "disabled" : ""}>
+            <span class="rl">${label}</span>
+            <span class="rv ${val === null ? "empty" : ""}">${val ?? "선택하기"}</span>
+          </button>
+          ${submitted && val !== correct[k] ? `<div class="ans">정답: ${correct[k]}</div>` : ""}
+          ${submitted ? "" : `
+          <div class="rowWrap"><div class="rowInner"><div class="rowOpts">
+            ${opts[k].map(o => `<button class="opt" data-v="${o}">${o}</button>`).join("")}
+          </div></div></div>`}
+        </div>`;
+    }).join("")}
+    <button class="btn" id="mainBtn" ${(!submitted && !allAnswered()) ? "disabled" : ""}>${
+      submitted ? (idx >= order.length ? "결과 보기" : "다음 곡") : "확인"
+    }</button>`;
+}
+
+function updateMain() {
+  const b = document.getElementById("mainBtn");
+  if (b) b.disabled = !allAnswered();
+}
+
+function submit() {
+  submitted = true;
+  FIELDS.forEach(([k, label]) => {
+    if (answers[k] === correct[k]) score++;
+    else wrongs.push(`${curTrack.composer} - ${curTrack.title} (${label}: 정답 ${correct[k]})`);
+  });
+  buildCard(false);
+}
+
+function playClip() {
+  quizAudio.pause();
+  quizAudio.src = srcFor(curTrack.n);
+  quizAudio.play().catch(() => {});
+}
+
+function showScore() {
+  quizAudio.pause();
+  const total = order.length * 3;
+  quizCard.classList.remove("anim");
+  quizCard.innerHTML = `
+    <div class="score">
+      <div>점수</div>
+      <div class="big">${score} / ${total}</div>
+    </div>
+    ${wrongs.length
+      ? `<div class="wrongList"><b>틀린 문항</b><ul>${wrongs.map(w => `<li>${w}</li>`).join("")}</ul></div>`
+      : `<div class="score">모두 맞혔어요!</div>`}
+    <button class="btn" id="restart">다시 풀기</button>`;
+}
+
+quizCard.addEventListener("click", e => {
+  if (e.target.closest("#playBtn")) return playClip();
+  if (e.target.closest("#restart")) return startQuiz();
+  const main = e.target.closest("#mainBtn");
+  if (main && !main.disabled) return submitted ? nextTrack() : submit();
+  if (submitted) return;
+
+  const head = e.target.closest(".rowHead");
+  if (head) {
+    const row = head.closest(".row");
+    const willOpen = !row.classList.contains("open");
+    quizCard.querySelectorAll(".row.open").forEach(r => r.classList.remove("open"));
+    if (willOpen) row.classList.add("open");
+    return;
+  }
+
+  const opt = e.target.closest(".opt");
+  if (opt) {
+    const row = opt.closest(".row");
+    const k = row.dataset.k;
+    answers[k] = opt.dataset.v;
+    const rv = row.querySelector(".rv");
+    rv.textContent = opt.dataset.v;
+    rv.classList.remove("empty");
+    row.classList.remove("open");
+    updateMain();
+  }
+});
+
+/* ---------- 탭 ---------- */
+const tabListen = document.getElementById("tabListen");
+const tabQuiz = document.getElementById("tabQuiz");
+const listenEl = document.getElementById("listen");
+const quizEl = document.getElementById("quiz");
+const pill = document.getElementById("pill");
+
+function movePill() {
+  const b = document.querySelector(".nav button.on");
+  pill.style.left = b.offsetLeft + "px";
+  pill.style.width = b.offsetWidth + "px";
+}
+
+function show(which) {
+  const toQuiz = which === "quiz";
+  if (toQuiz === quizEl.classList.contains("active")) return;
+
+  listenEl.classList.toggle("active", !toQuiz);
+  quizEl.classList.toggle("active", toQuiz);
+
+  tabListen.classList.toggle("on", !toQuiz);
+  tabQuiz.classList.toggle("on", toQuiz);
+  movePill();
+  window.scrollTo(0, 0);
+
+  if (toQuiz) { audio.pause(); startQuiz(); }
+  else { quizAudio.pause(); }
+}
+tabListen.onclick = () => show("listen");
+tabQuiz.onclick = () => show("quiz");
+window.addEventListener("resize", movePill);
+
+renderList();
+movePill();
+</script>
+</body>
+</html>
