@@ -12,17 +12,8 @@
   button,input{font-family:inherit}
   button:focus{outline:none}
   h1{margin:0;font-size:22px;font-weight:900;letter-spacing:-.02em}
-  .card{background:#fff;border-radius:14px;padding:14px 16px}
+  .card{background:#fff;border-radius:999px;padding:14px 16px}
   .head .sub{font-size:12px;color:var(--sub);margin-top:4px}
-  .volRow{margin:6px -6px 0;display:flex;align-items:center}
-  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:44px;margin:0;background:transparent;cursor:pointer;touch-action:none}
-  input[type=range]:focus{outline:none}
-  input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(to right,var(--accent) var(--p),var(--line) var(--p))}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;margin-top:-4px;border-radius:50%;background:var(--accent);border:0;transition:transform .3s var(--out)}
-  input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15)}
-  input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:var(--line)}
-  input[type=range]::-moz-range-progress{height:6px;border-radius:3px;background:var(--accent)}
-  input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radius:50%;background:var(--accent)}
 
   /* 탭 + 구독 버튼 한 줄 */
   .tabRow{display:flex;align-items:center;gap:6px;margin:12px 0}
@@ -45,7 +36,7 @@
 
   /* 시대별 카드 */
   .section{margin:0 0 12px}
-  .section.eraCard{background:var(--panel);border-radius:16px;padding:12px 10px 4px;animation:riseSoft .7s var(--out) both}
+  .section.eraCard{background:var(--panel);border-radius:16px;padding:12px 10px;animation:riseSoft .7s var(--out) both}
   #list .eraCard:nth-child(2){animation-delay:.08s}
   #list .eraCard:nth-child(3){animation-delay:.16s}
   .section h2{margin:2px 4px 10px;font-size:12px;font-weight:800;color:#d8c8e2}
@@ -88,7 +79,8 @@
   .qTitle{font-size:12px;font-weight:800;color:#d8c8e2;margin:2px 4px 10px}
   .playRow{display:flex;gap:8px;margin-bottom:10px}
   .playRow .btn.play{width:auto;height:40px;margin:0;padding:0 16px;border-radius:999px;background:#fff;color:var(--ink);display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;flex:0 0 auto;transition:background-color .3s var(--out),transform .25s var(--out)}
-  .playRow .btn.play.isPlaying{background:#f1e4f6}
+  .playRow .btn.play.isPlaying{background:var(--accent);color:#fff}
+  .playRow .btn.play.isPlaying .qCurTxt{color:#fff}
   .btn.play .pl{display:flex}
   .btn.play .pl svg{width:16px;height:16px;display:block}
   .btn.play .eq2{display:none}
@@ -122,8 +114,12 @@
   .btn:active:not(:disabled){transform:scale(.98)}
   .btn:disabled{background:rgba(255,255,255,.14);color:rgba(255,255,255,.45);cursor:default}
   .btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.28)}
+  .btnRow{display:flex;gap:8px;margin-top:12px}
+  .btnRow .btn{margin-top:0}
+  .btnRow .btn.ghost{flex:1}
+  .btnRow #mainBtn{flex:0 0 96px;width:96px}
 
-  .sRow{display:flex;gap:10px;align-items:center;animation:fadeIn .5s var(--out) .15s both}
+  .sRow{display:flex;gap:10px;align-items:flex-start;animation:fadeIn .5s var(--out) .15s both}
   .rePlay{flex-shrink:0;width:38px;height:38px;border-radius:50%;border:0;padding:0;background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .25s var(--out),background-color .3s var(--out),color .3s var(--out)}
   .rePlay:active{transform:scale(.9)}
   .rePlay svg{width:14px;height:14px}
@@ -160,7 +156,6 @@
 <header class="head">
   <div class="card">
     <h1>음악 감상 수행평가</h1>
-    <div class="volRow"><input type="range" id="vol" min="0" max="1" step="0.01" value="1" aria-label="음량"></div>
   </div>
   <div class="tabRow">
     <nav class="nav">
@@ -403,8 +398,10 @@ function activeHTML() {
           ${opts[k].map((o, i) => `<button class="opt" style="--i:${i}" data-v="${o}">${o}</button>`).join("")}
         </div></div></div>
       </div>`).join("")}
-    <button class="btn" id="mainBtn" disabled>확인</button>
-    <button class="btn ghost" id="clearBtn">시험지 초기화</button>`;
+    <div class="btnRow">
+      <button class="btn ghost" id="clearBtn">초기화</button>
+      <button class="btn" id="mainBtn" disabled>확인</button>
+    </div>`;
 }
 
 function nextTrack() {
@@ -704,15 +701,6 @@ function enforceClip(a) { if (a.currentTime >= CLIP) { a.pause(); a.currentTime 
 function rewindIfEnded(a) { if (a.currentTime >= CLIP - 0.2) a.currentTime = 0; }
 [audio, quizAudio, replayAudio].forEach(a => a.addEventListener("timeupdate", () => enforceClip(a)));
 
-/* ---------- 음량 조절 (세 오디오 공통) ---------- */
-const volInput = document.getElementById("vol");
-function paintVol() { volInput.style.setProperty("--p", (volInput.value * 100) + "%"); }
-paintVol();
-volInput.addEventListener("input", () => {
-  paintVol();
-  const v = +volInput.value;
-  audio.volume = quizAudio.volume = replayAudio.volume = v;
-});
 
 /* ---------- 상단바 높이에 맞춰 아래 요소 위치 조정 ---------- */
 function setBarVars() {
