@@ -11,8 +11,8 @@
   body{margin:0 auto;max-width:520px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;min-height:100vh;padding:12px 10px 60px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-weight:700}
   button,input{font-family:inherit}
   button:focus{outline:none}
-  h1{margin:0;font-size:22px;font-weight:900;letter-spacing:-.02em}
-  .card{background:#fff;border-radius:999px;padding:14px 16px}
+  h1{margin:0;font-size:16px;line-height:1;font-weight:900;letter-spacing:-.02em}
+  .card{background:#fff;border-radius:999px;height:38px;padding:0 16px;display:flex;align-items:center}
   .head .sub{font-size:12px;color:var(--sub);margin-top:4px}
 
   /* 탭 + 구독 버튼 한 줄 */
@@ -36,25 +36,25 @@
 
   /* 시대별 카드 */
   .section{margin:0 0 12px}
-  .section.eraCard{background:var(--panel);border-radius:16px;padding:12px 10px;animation:riseSoft .7s var(--out) both}
+  .section.eraCard{background:var(--panel);border-radius:34px;padding:12px 10px;animation:riseSoft .7s var(--out) both}
   #list .eraCard:nth-child(2){animation-delay:.08s}
   #list .eraCard:nth-child(3){animation-delay:.16s}
-  .section h2{margin:2px 4px 10px;font-size:12px;font-weight:800;color:#d8c8e2}
+  .section h2{margin:2px 14px 10px;font-size:14px;font-weight:800;color:#d8c8e2}
 
   /* 곡 카드 */
-  .track{background:#fff;border-radius:12px;margin-bottom:8px;overflow:hidden;transition:box-shadow .5s var(--out)}
+  .track{background:#fff;border-radius:999px;margin-bottom:8px;overflow:hidden;transition:box-shadow .5s var(--out),border-radius .5s var(--out)}
   .track:last-child{margin-bottom:0}
-  .track.open{box-shadow:0 10px 24px rgba(0,0,0,.25)}
+  .track.open{border-radius:26px;box-shadow:0 10px 24px rgba(0,0,0,.25)}
   .tHead{display:flex;align-items:center;gap:10px;padding:12px;cursor:pointer;transition:background-color .3s var(--out)}
   .tHead:active{background:#f7f2f9}
-  .num{position:relative;width:26px;height:26px;border-radius:7px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .3s var(--out)}
+  .num{position:relative;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .3s var(--out)}
   .num svg{width:12px;height:12px;display:none}
   .num .iconPlay{display:block;margin-left:1px}
   .track.isPlaying .num .iconPlay{display:none}
   .track.isPlaying .num .iconPause{display:block}
   .track.open .num:active{transform:scale(.9)}
   .num .n{display:none}
-  .meta{flex:1;min-width:0;font-size:15px;font-weight:800;color:var(--ink);line-height:1.35}
+  .meta{flex:1;min-width:0;font-size:15px;font-weight:700;color:var(--ink);line-height:1.35}
   .eq{display:none}
   .spin{display:none;width:14px;height:14px;border-radius:50%;border:2px solid #e6dcec;border-top-color:var(--accent);box-sizing:border-box;flex-shrink:0}
   .track.loading .spin{display:block;animation:spinRot .8s linear infinite}
