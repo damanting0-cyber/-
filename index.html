@@ -16,14 +16,17 @@
   .head .sub{font-size:12px;color:var(--sub);margin-top:4px}
 
   /* 탭 + 구독 버튼 한 줄 */
-  .tabRow{display:flex;align-items:center;gap:6px;margin:12px 0}
+  .tabRow{display:flex;align-items:center;gap:6px;margin:12px -10px 0;padding:8px 10px;position:sticky;top:0;z-index:20;background:var(--bg)}
   .nav{position:relative;display:flex;gap:6px;flex:0 0 auto}
   .nav .pill{position:absolute;top:0;bottom:0;left:0;width:0;border-radius:999px;background:#fff;transition:left .5s var(--out),width .5s var(--out)}
   .nav button{position:relative;z-index:1;height:38px;padding:0 20px;border:0;border-radius:999px;background:#2e1438;color:#f1e8f5;font-size:15px;font-weight:800;cursor:pointer;transition:color .4s var(--out),background-color .4s var(--out),transform .25s var(--out)}
   .nav button.on{background:transparent;color:var(--ink)}
   .nav button:active{transform:scale(.96)}
-  .ytBtn{flex:1;min-width:0;height:38px;display:flex;align-items:center;justify-content:flex-end;padding:0 16px;border-radius:999px;text-decoration:none;color:var(--ink);font-size:15px;font-weight:900;white-space:nowrap;background-image:linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,226,242,.9) 55%,#ffc4e4 100%),var(--pet,none);background-size:auto,cover;background-position:0 0,center 38%;background-repeat:no-repeat;box-shadow:0 4px 14px rgba(0,0,0,.25);transition:transform .25s var(--out)}
+  .ytBtn{flex:1;min-width:0;height:38px;display:flex;align-items:center;justify-content:flex-end;padding:0 16px;border-radius:999px;text-decoration:none;color:var(--ink);font-size:15px;font-weight:900;white-space:nowrap;position:relative;overflow:hidden;background-image:linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,226,242,.9) 55%,#ffc4e4 100%),var(--pet,none);background-size:auto,cover;background-position:0 0,center 38%;background-repeat:no-repeat;box-shadow:0 4px 14px rgba(0,0,0,.25);transition:transform .25s var(--out)}
   .ytBtn:active{transform:scale(.97)}
+  .ytBtn span{position:relative;z-index:1}
+  .ytBtn::before{content:"";position:absolute;top:0;bottom:0;left:0;right:0;z-index:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.7) 50%,transparent 65%);transform:translateX(-100%);animation:shine 3s ease-in-out infinite;pointer-events:none}
+  @keyframes shine{0%{transform:translateX(-100%)}80%,100%{transform:translateX(100%)}}
 
   /* 화면 전환: 블러가 풀리며 ease-out으로 */
   .screen{display:none}
@@ -42,9 +45,9 @@
   .section h2{margin:2px 14px 10px;font-size:14px;font-weight:800;color:#d8c8e2}
 
   /* 곡 카드 */
-  .track{background:#fff;border-radius:999px;margin-bottom:8px;overflow:hidden;transition:box-shadow .5s var(--out),border-radius .5s var(--out)}
+  .track{background:#fff;border-radius:26px;margin-bottom:8px;overflow:hidden;transition:box-shadow .5s var(--out)}
   .track:last-child{margin-bottom:0}
-  .track.open{border-radius:26px;box-shadow:0 10px 24px rgba(0,0,0,.25)}
+  .track.open{box-shadow:0 10px 24px rgba(0,0,0,.25)}
   .tHead{display:flex;align-items:center;gap:10px;padding:12px;cursor:pointer;transition:background-color .3s var(--out)}
   .tHead:active{background:#f7f2f9}
   .num{position:relative;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .3s var(--out)}
@@ -72,11 +75,11 @@
   .missing{min-height:0;overflow:hidden;font-size:12px;color:#c0392b}
 
   /* 시험 카드 (시대 카드와 같은 톤) */
-  .qcard{background:var(--panel);border-radius:16px;padding:12px;margin-bottom:12px;overflow:hidden}
+  .qcard{background:var(--panel);border-radius:36px;padding:12px;margin-bottom:12px;overflow:hidden}
   .qcard.anim{animation:qIn .8s var(--out) both}
   .qcard.enter{animation:qIn .8s var(--out) both}
   .qcard.done{padding:10px 12px}
-  .qTitle{font-size:12px;font-weight:800;color:#d8c8e2;margin:2px 4px 10px}
+  .qTitle{font-size:14px;font-weight:800;color:#d8c8e2;margin:2px 14px 10px}
   .playRow{display:flex;gap:8px;margin-bottom:10px}
   .playRow .btn.play{width:auto;height:40px;margin:0;padding:0 16px;border-radius:999px;background:#fff;color:var(--ink);display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;flex:0 0 auto;transition:background-color .3s var(--out),transform .25s var(--out)}
   .playRow .btn.play.isPlaying{background:var(--accent);color:#fff}
@@ -91,7 +94,7 @@
   .qBar{height:6px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden}
   .qFill{height:100%;width:0;background:#fff;border-radius:3px;transition:width .3s linear}
 
-  .row{background:#fff;border-radius:12px;margin-bottom:8px;overflow:hidden;transition:background-color .4s var(--out)}
+  .row{background:#fff;border-radius:26px;margin-bottom:8px;overflow:hidden;transition:background-color .4s var(--out)}
   .row.ok{background:#e9f8ee}
   .row.ng{background:#fdecea}
   .rowHead{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;background:none;border:0;padding:13px 14px;font-size:15px;font-weight:800;color:var(--ink);cursor:pointer;text-align:left;transition:background-color .25s var(--out)}
@@ -110,7 +113,7 @@
   @keyframes optIn{from{opacity:0;transform:translateY(-6px);filter:blur(6px)}to{opacity:1;transform:none;filter:blur(0)}}
   .opt:active{transform:scale(.98);background:#ebdff1}
 
-  .btn{display:block;width:100%;margin-top:12px;border:0;border-radius:12px;padding:13px 16px;font-size:15px;font-weight:800;cursor:pointer;background:#fff;color:var(--ink);transition:transform .25s var(--out),background-color .3s var(--out),color .3s var(--out)}
+  .btn{display:block;width:100%;margin-top:12px;border:0;border-radius:999px;padding:13px 16px;font-size:15px;font-weight:800;cursor:pointer;background:#fff;color:var(--ink);transition:transform .25s var(--out),background-color .3s var(--out),color .3s var(--out)}
   .btn:active:not(:disabled){transform:scale(.98)}
   .btn:disabled{background:rgba(255,255,255,.14);color:rgba(255,255,255,.45);cursor:default}
   .btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.28)}
@@ -128,7 +131,7 @@
   .rePlay.isPlaying .ic-play{display:none}
   .rePlay.isPlaying .ic-pause{display:block}
   .sList{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
-  .sPill{display:flex;align-items:center;gap:8px;min-height:34px;padding:6px 10px 6px 12px;border-radius:12px;font-size:14px;font-weight:800;background:#fff;color:var(--ink)}
+  .sPill{display:flex;align-items:center;gap:8px;min-height:40px;padding:6px 14px;border-radius:999px;font-size:14px;font-weight:800;background:#fff;color:var(--ink)}
   .sLab{width:40px;flex-shrink:0;font-size:12px;color:var(--sub)}
   .sVals{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;white-space:normal}
   .sWrong{min-width:0;overflow-wrap:anywhere;text-decoration:line-through;text-decoration-thickness:2px;color:#c0392b}
@@ -157,7 +160,8 @@
   <div class="card">
     <h1>음악 감상 수행평가</h1>
   </div>
-  <div class="tabRow">
+</header>
+<div class="tabRow">
     <nav class="nav">
       <span class="pill" id="pill"></span>
       <button id="tabListen" class="on">듣기</button>
@@ -165,7 +169,6 @@
     </nav>
     <a class="ytBtn" href="https://m.youtube.com/@neneko_mashiro" target="_blank" rel="noopener"><span>네네코 마시로 구독</span></a>
   </div>
-</header>
 <div class="stage">
   <!-- 듣기 -->
   <section id="listen" class="screen active">
@@ -426,7 +429,7 @@ function updateMain() {
 }
 
 function summaryHTML() {
-  const rows = FIELDS.map(([k, label]) => {
+  const rows = [FIELDS[0], FIELDS[2], FIELDS[1]].map(([k, label]) => {
     const ok = answers[k] === correct[k];
     const vals = ok
       ? `<span class="sVal">${correct[k]}</span>`
@@ -581,7 +584,7 @@ quizList.addEventListener("click", e => {
   if (head) {
     const row = head.closest(".row");
     const willOpen = !row.classList.contains("open");
-    if (willOpen) row.classList.add("open");
+    row.classList.toggle("open", willOpen);
     return;
   }
 
