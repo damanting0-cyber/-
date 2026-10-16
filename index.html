@@ -8,7 +8,7 @@
   :root{--bg:#1f0029;--panel:#2d1536;--ink:#1c0523;--sub:#7d6e86;--accent:#22002b;--line:#ebe4ee;--out:cubic-bezier(.22,1,.36,1)}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html{-webkit-text-size-adjust:100%}
-  body{margin:0 auto;max-width:520px;min-height:100vh;padding:12px 10px 60px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-weight:700}
+  body{margin:0 auto;max-width:520px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;min-height:100vh;padding:12px 10px 60px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-weight:700}
   button,input{font-family:inherit}
   button:focus{outline:none}
   h1{margin:0;font-size:22px;font-weight:900;letter-spacing:-.02em}
@@ -120,9 +120,9 @@
   .btnRow #mainBtn{flex:0 0 96px;width:96px}
 
   .sRow{display:flex;gap:10px;align-items:flex-start;animation:fadeIn .5s var(--out) .15s both}
-  .rePlay{flex-shrink:0;width:38px;height:38px;border-radius:50%;border:0;padding:0;background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .25s var(--out),background-color .3s var(--out),color .3s var(--out)}
-  .rePlay:active{transform:scale(.9)}
-  .rePlay svg{width:14px;height:14px}
+  .rePlay{flex-shrink:0;width:auto;height:40px;padding:0 16px;border-radius:999px;border:0;background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .25s var(--out),background-color .3s var(--out),color .3s var(--out)}
+  .rePlay:active{transform:scale(.98)}
+  .rePlay svg{width:16px;height:16px}
   .rePlay .ic-pause{display:none}
   .rePlay.isPlaying{background:var(--accent);color:#fff}
   .rePlay.isPlaying .ic-play{display:none}
@@ -133,9 +133,9 @@
   .sVals{flex:1;min-width:0;display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden}
   .sWrong{min-width:0;overflow:hidden;text-overflow:ellipsis;text-decoration:line-through;text-decoration-thickness:2px;color:#c0392b}
   .sVal{min-width:0;overflow:hidden;text-overflow:ellipsis}
-  .sMark{font-size:13px;flex-shrink:0}
-  .sPill.ok .sMark{color:#2f9e44}
-  .sPill.ng .sMark{color:#c0392b}
+  .sPill.ok .sVal{color:#2f9e44}
+  .qRows{display:grid;grid-template-columns:1fr 1fr;gap:0 8px;align-items:start}
+  .qRows .row[data-k="title"]{grid-column:1 / -1;order:3}
 
   .score{text-align:center;padding:16px 0;color:#fff}
   .score .big{font-size:40px;font-weight:900}
@@ -388,16 +388,16 @@ function activeHTML() {
     <div class="qProg">
       <div class="qBar"><div class="qFill" id="qFill"></div></div>
     </div>
-    ${FIELDS.map(([k, label]) => `
+    <div class="qRows">${FIELDS.map(([k, label]) => `
       <div class="row" data-k="${k}">
         <button class="rowHead" data-k="${k}">
-          <span class="rl">${label}</span>
+          <span class="rl">${k === "title" ? "곡 이름" : label}</span>
           <span class="rv empty">선택하기</span>
         </button>
         <div class="rowWrap"><div class="rowInner"><div class="rowOpts">
           ${opts[k].map((o, i) => `<button class="opt" style="--i:${i}" data-v="${o}">${o}</button>`).join("")}
         </div></div></div>
-      </div>`).join("")}
+      </div>`).join("")}</div>
     <div class="btnRow">
       <button class="btn ghost" id="clearBtn">초기화</button>
       <button class="btn" id="mainBtn" disabled>확인</button>
@@ -432,7 +432,7 @@ function summaryHTML() {
     const vals = ok
       ? `<span class="sVal">${correct[k]}</span>`
       : `<span class="sWrong">${answers[k]}</span><span class="sVal">${correct[k]}</span>`;
-    return `<div class="sPill ${ok ? "ok" : "ng"}"><span class="sLab">${label}</span><span class="sVals">${vals}</span><span class="sMark">${ok ? "✓" : "✕"}</span></div>`;
+    return `<div class="sPill ${ok ? "ok" : "ng"}"><span class="sLab">${label}</span><span class="sVals">${vals}</span></div>`;
   }).join("");
   return `<div class="sRow">
     <button class="rePlay" data-n="${curTrack.n}" aria-label="다시 듣기">
