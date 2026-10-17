@@ -252,8 +252,8 @@
   <!-- 시험 -->
   <section id="quiz" class="screen">
     <div id="quizList"></div>
-  <!-- ▼▼ 펫 이미지: 아래 img 한 줄을, 원본 파일의 <img class="petImg" ... src="data:image/jpeg;base64,/9j/..."> 줄로 그대로 교체하세요 ▼▼ -->
-  <div class="pet"><img class="petImg" alt="" src="https://via.placeholder.com/260x180"></div>
+  <!-- 펫 이미지: 이 HTML과 같은 폴더의 pet.jpg (파일이 없어도 오류 없이 그라디언트만 표시됨) -->
+  <div class="pet"><img class="petImg" alt="" src="pet.jpg"></div>
   </section>
 </div>
 <audio id="audio" preload="metadata"></audio>
@@ -653,7 +653,13 @@ function show(which) {
 tabListen.onclick = () => show("listen");
 tabQuiz.onclick = () => show("quiz");
 window.addEventListener("resize", movePill);
-document.querySelector(".ytBtn").style.setProperty("--pet", `url(${document.querySelector(".petImg").src})`);
+const petImg = document.querySelector(".petImg");
+const ytBtn = document.querySelector(".ytBtn");
+function applyPetBg() {
+  try { ytBtn.style.setProperty("--pet", `url(${petImg.src})`); } catch (e) {}
+}
+if (petImg.complete && petImg.naturalWidth > 0) applyPetBg();
+else petImg.addEventListener("load", applyPetBg);
 renderList();
 movePill();
 (function () {
